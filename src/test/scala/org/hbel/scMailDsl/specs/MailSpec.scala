@@ -1,13 +1,6 @@
 package org.hbel.scMailDsl.specs
 
-import java.io.File
-
 import org.scalatest._
-
-import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.Await
 
 class MailSpec extends FlatSpec with Matchers {
   import org.hbel.scMailDsl.Email._
@@ -42,7 +35,7 @@ class MailSpec extends FlatSpec with Matchers {
 
   "Sending a mail" should "fail if not all mail properties are set" in {
     val m = compose a mail containing "A text" from "me@you" regarding "Something"
-    implicit val server = MailServer("foo", 1)
+    implicit val server: MailServer = MailServer("foo", 1)
     m.send.isLeft should be(true)
   }
 
@@ -60,22 +53,7 @@ class MailSpec extends FlatSpec with Matchers {
   it should "not fail for attachments" in {
     val m = compose a mail containing "Hello World" from
       "me@you.com" to "foo@bar.com" regarding "Something" attach "foo.bar" attach "bar.foo"
-    m.validate should be (true)
+    m.validate should be(true)
   }
-
-  /*it should "send an email" in {
-    implicit val server = MailServer("foo", 1)
-    val m = compose a mail from "noreply" @: "foo.de" to "bar@foo.de" regarding "Whatever" containing "Foobar"
-    m.send match {
-      case Left(s) => throw new Exception(s"Missing values: ${s}")
-      case Right(f) => {
-        f.onComplete( _ match {
-          case Failure(e) => throw new Exception(s"Sending mail failed: ${e}")
-          case Success(s) => s"Sending mail was a success: ${s}"
-        })
-        Await.ready(f, 5 seconds)
-      }
-    }
-  }*/
 }
 

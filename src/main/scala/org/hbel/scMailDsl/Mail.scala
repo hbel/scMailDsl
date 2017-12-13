@@ -91,6 +91,7 @@ class Mail(val to: String, val from: String, val subject: String, val message: S
         emailImpl.setSmtpPort(server.smtpPort)
         emailImpl.setSSLOnConnect(server.sslOnConnect)
         emailImpl.setStartTLSRequired(server.tlsRequired)
+        emailImpl.setCharset("utf-8");
 
         val retVal = emailImpl.send()
         logger.info(s"Message sent.")

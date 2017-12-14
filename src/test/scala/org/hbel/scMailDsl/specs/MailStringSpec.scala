@@ -3,6 +3,7 @@ package org.hbel.scMailDsl.specs
 import org.scalatest._
 
 class MailStringSpec extends FlatSpec with Matchers {
+
   import org.hbel.scMailDsl.Email._
 
   "@:" should "attach an email address to a domain" in {

@@ -1,10 +1,18 @@
 package org.hbel.scMailDsl.specs
 
+import org.hbel.scMailDsl.Email._
+import org.hbel.scMailDsl.MailServer
 import org.scalatest._
 
+class AsyncMailSpec extends AsyncFlatSpec with Matchers {
+  "Sending a mail" should "fail if not all mail properties are set" in {
+    val m = compose a mail containing "A text" from "me@you" regarding "Something"
+    implicit val server: MailServer = MailServer("foo", 1)
+    recoverToSucceededIf[Exception](m.send)
+  }
+}
+
 class MailSpec extends FlatSpec with Matchers {
-  import org.hbel.scMailDsl.Email._
-  import org.hbel.scMailDsl.MailServer
 
   "'compose a mail'" should "create a new Mail instance" in {
     val m = compose a mail
@@ -33,21 +41,17 @@ class MailSpec extends FlatSpec with Matchers {
     m.message shouldEqual "A text"
   }
 
-  "Sending a mail" should "fail if not all mail properties are set" in {
-    val m = compose a mail containing "A text" from "me@you" regarding "Something"
-    implicit val server: MailServer = MailServer("foo", 1)
-    m.send.isLeft should be(true)
-  }
-
   "Creating a mail" should "not fail if all properties are set" in {
     val m = compose a mail containing "A text" from "me@you.com" to "foo@bar.com" regarding "Something"
-    m.validate should be (true)
+    m.validate should be(true)
   }
 
   it should "not fail for a html message" in {
-    val m = compose a mail containing <html><body>Hello World</body></html> from
+    val m = compose a mail containing <html>
+      <body>Hello World</body>
+    </html> from
       "me@you.com" to "foo@bar.com" regarding "Something"
-    m.validate should be (true)
+    m.validate should be(true)
   }
 
   it should "not fail for attachments" in {

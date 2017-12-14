@@ -5,7 +5,8 @@ import java.io.File
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.mail.{HtmlEmail, MultiPartEmail}
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
+import scala.util.Try
 
 /**
   * Actual mailing class
@@ -76,29 +77,32 @@ class Mail(val to: String, val from: String, val subject: String, val message: S
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def send(implicit server: MailServer): Either[String, Future[String]] = {
+  def send(implicit server: MailServer): Future[String] = {
     require(server != null, "Mail server must be given")
 
-    if (!validate) {
-      val msg = "Email is missing some components"
-      logger.error(msg)
-      Left(msg)
-    }
-    else {
-      logger.info(s"Preparing to send message via ${server.hostName}.")
-      val f = Future {
-        emailImpl.setHostName(server.hostName)
-        emailImpl.setSmtpPort(server.smtpPort)
-        emailImpl.setSSLOnConnect(server.sslOnConnect)
-        emailImpl.setStartTLSRequired(server.tlsRequired)
-        emailImpl.setCharset("utf-8");
-
-        val retVal = emailImpl.send()
-        logger.info(s"Message sent.")
-        retVal
+    logger.info(s"Preparing to send message via ${server.hostName}.")
+    val sendAction = Promise[String]
+    Future {
+      if (!validate) {
+        val msg = "Email is missing some components"
+        logger.error(msg)
+        sendAction.failure(new Exception(msg))
       }
-      Right(f)
+      emailImpl.setHostName(server.hostName)
+      emailImpl.setSmtpPort(server.smtpPort)
+      emailImpl.setSSLOnConnect(server.sslOnConnect)
+      emailImpl.setStartTLSRequired(server.tlsRequired)
+      emailImpl.setCharset("utf-8")
+
+      val retVal: Try[String] = Try {
+        val rv = emailImpl.send()
+        logger.info(s"Message sent.")
+        rv
+      }
+
+      sendAction.complete(retVal)
     }
+    sendAction.future
   }
 
   def validate: Boolean = !List(to, from, subject, message).contains("")

@@ -28,7 +28,7 @@ object Email {
     *
     * @return
     */
-  def mail = new Mail("", "", "", "", new SimpleEmail, Nil)
+  def mail = new Mail("", "", "", "", "", "", "", LastAndType.None, new SimpleEmail, Nil)
 
   /**
     * DSL convenience object. Allows natural language construct "compose a mail" in source code.

@@ -55,9 +55,34 @@ class MailSpec extends FlatSpec with Matchers {
   }
 
   it should "not fail for attachments" in {
-    val m = compose a mail containing "Hello World" from
+    var m = compose a mail containing "Hello World" from
       "me@you.com" to "foo@bar.com" regarding "Something" attach "foo.bar" attach "bar.foo"
     m.validate should be(true)
+    m = compose a mail containing "Hello World" from
+      "me@you.com" to "foo@bar.com" regarding "Something" attach "foo.bar" and "bar.foo"
+    m.validate should be(true)
+  }
+
+  "and" should "should add to the last used of to, cc, bcc or replyTo" in {
+    var m = compose a mail containing "Hello World" from
+      "me@you.com" to "foo@bar.com" and "boo@far.dk" regarding "Something"
+    m.to should be("foo@bar.com,boo@far.dk")
+    m = compose a mail containing "Hello World" from
+      "me@you.com" to "foo@bar.com" cc "too@far.com" and "boo@far.dk" regarding "Something"
+    m.cc should be("too@far.com,boo@far.dk")
+    m = compose a mail containing "Hello World" from
+      "me@you.com" to "foo@bar.com" bcc "too@far.com" and "boo@far.dk" regarding "Something"
+    m.bcc should be("too@far.com,boo@far.dk")
+    m = compose a mail containing "Hello World" from
+      "me@you.com" to "foo@bar.com" replyTo "too@far.com" and "boo@far.dk" regarding "Something"
+    m.replyTo should be("too@far.com,boo@far.dk")
+  }
+
+  it should "should fail in all other cases" in {
+    an[IllegalArgumentException] should be thrownBy {
+      compose a mail containing "Hello World" from
+        "me@you.com" to "foo@bar.com" regarding "Something" and "test@it.it"
+    }
   }
 }
 

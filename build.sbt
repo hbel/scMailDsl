@@ -4,8 +4,8 @@ lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
       organization := "org.hbel",
-      scalaVersion := "2.12.3",
-      version      := "0.0.1"
+      scalaVersion := "2.12.4",
+      version := "0.1.1"
     )),
     name := "scMailDsl",
     libraryDependencies ++= Seq(
